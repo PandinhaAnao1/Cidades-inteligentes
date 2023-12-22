@@ -4,13 +4,14 @@
   "description": "",
   "main": "desafio.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "nodemon"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.0.2"
   }
 }
