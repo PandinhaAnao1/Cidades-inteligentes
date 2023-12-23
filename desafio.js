@@ -1,11 +1,14 @@
-const bycrypt = require('bcrypt')
+const { moduleExpression } = require('@babel/types');
+const bycrypt = require('bcrypt');
+const { isArray } = require('util');
+const { array } = require('yargs');
 
 
 let dataBase = []
 
 //separa a classe dos metodosstatusUsuari
 
-let usuario = class {
+ class usuario {
     constructor(
         nome, email, senha, permisoes = [null,null,null,null],
     ) {
@@ -130,7 +133,6 @@ let usuario = class {
     //Atulizar usario por campo
     altualizarUsuario(emailAtua, updNome, updemail, updSenha, updPermi) {
         //Corrijir a logica dos ifs
-        console.log(emailAtua, updNome, updemail, updSenha, updPermi)
         let usuarioSemAtualizar;
         let testeStatusLogin = 
             (this.logado && this.statusUsuario && this.permisoes[1]);
@@ -163,9 +165,8 @@ let usuario = class {
                     arryAtualizados[2] = true;
                 }
             }
-            if(updPermi[2]){
-                console.log('passou')
-                usuarioSemAtualizar.permi = updPermi;
+            if(Array.isArray(updPermi)){
+                usuarioSemAtualizar.permisoes = updPermi;
                 arryAtualizados[3] = true;
                 
                }
@@ -174,11 +175,10 @@ let usuario = class {
                 return {
                     Mensage: 'Campos atualizado com sucesso!',
                     Nome:arryAtualizados[0]?'O campo do nome foi atualizado!':'O campo não atualizado!',
-                    Email:arryAtualizados[0]?'O campo do email foi atualizado!':'O campo não atualizado!',
-                    Senha:arryAtualizados[0]?'O campo da senha foi atualizado!':'O campo não atualizado!',
-                    Permisoes:arryAtualizados[0]?'O campo do permisões foi atualizado!':'O campo não atualizado!'
+                    Email:(arryAtualizados[1]?'O campo do email foi atualizado!':'O campo não atualizado!'),
+                    Senha:arryAtualizados[2]?'O campo da senha foi atualizado!':'O campo não atualizado!',
+                    Permisoes:arryAtualizados[3]?'O campo do permisões foi atualizado!':'O campo não atualizado!'
                 }
-            }
             }else{
                 return{
                     Mensage:'Verifique os campos para realizar a atualização',
@@ -341,10 +341,11 @@ let usuario = class {
     };
 }
 
-const guilherme = new usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
-const loginrealizado = guilherme.realizarLogin('GuilhermeKrause@gmail.com','Altenirgomes1.');
-const aldison = guilherme.cadastrarNovoUsuario("Adilson portilho barbosa","adison@gmail.com","aldisonSenha23?",[true,true,true,true]);
+// const guilherme = new usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
+// const loginrealizado = guilherme.realizarLogin('GuilhermeKrause@gmail.com','Altenirgomes1.');
+// const aldison = guilherme.cadastrarNovoUsuario("Adilson portilho barbosa","adison@gmail.com","aldisonSenha23?",[true,true,true,true]);
 
-const adisonAtulizado = guilherme.altualizarUsuario("adison@gmail.com",null,null,null,[null,null,true,null])
-console.log(adisonAtulizado)
-module.exports = usuario;
+// const adisonAtulizado = guilherme.altualizarUsuario("adison@gmail.com",null,null,null,null)
+// console.log(adisonAtulizado);
+// console.log(aldison)
+module.exports = {usuario, dataBase};
