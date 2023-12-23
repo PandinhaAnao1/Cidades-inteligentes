@@ -350,15 +350,4 @@ class Usuario {
         }
     };
 }
-
-// const guilherme = new Usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
-// const loginrealizado = guilherme.realizarLogin('GuilhermeKrause@gmail.com','Altenirgomes1.');
-// const aldison = guilherme.cadastrarNovoUsuario("Adilson portilho barbosa","adison@gmail.com","aldisonSenha23?",[true,true,true,true]);
-
-// const emailErrado  =  guilherme.listarUsuarios('adison@gmail.com');
-// console.log(emailErrado)
-
-// const adisonAtulizado = guilherme.altualizarUsuario("adison@gmail.com",null,null,null,null)
-// console.log(adisonAtulizado);dataBase
-// console.log(aldison)
 module.exports = {Usuario, dataBase};

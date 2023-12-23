@@ -1,4 +1,3 @@
-const nodemon = require('nodemon');
 const {Usuario, dataBase} = require('./desafio.js'); 
 
 //fazer a rota de cadastra com email errado e senha
