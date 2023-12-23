@@ -8,7 +8,7 @@ let dataBase = []
 
 //separa a classe dos metodosstatusUsuari
 
- class Usuario {
+class Usuario {
     constructor(
         nome, email, senha, permisoes = [null,null,null,null],
     ) {
@@ -106,6 +106,7 @@ let dataBase = []
         return emailUnico;
     };
 
+    
     //Realiza cadastro de novos usuario unicos
     cadastrarNovoUsuario(usarioNovoNome,usuarioNovoemail,usarioNovosenha,usuarioNovoPemisoes) {
         let testeStatusLogin = 
@@ -113,7 +114,7 @@ let dataBase = []
         let nomeValido = Boolean(usarioNovoNome);
         if (testeStatusLogin&&nomeValido) {
             let tentativaCadastro =
-                new usuario(
+                new Usuario(
                     usarioNovoNome,
                     usuarioNovoemail,
                     usarioNovosenha,
@@ -125,7 +126,7 @@ let dataBase = []
                 Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
-                permisão:this.cadastraUse
+                permisao:this.permisoes[0]
             };
         };
     };
@@ -175,7 +176,7 @@ let dataBase = []
                 return {
                     Mensage: 'Campos atualizado com sucesso!',
                     Nome:arryAtualizados[0]?'O campo do nome foi atualizado!':'O campo não atualizado!',
-                    Email:(arryAtualizados[1]?'O campo do email foi atualizado!':'O campo não atualizado!'),
+                    Email:arryAtualizados[1]?'O campo do email foi atualizado!':'O campo não atualizado!',
                     Senha:arryAtualizados[2]?'O campo da senha foi atualizado!':'O campo não atualizado!',
                     Permisoes:arryAtualizados[3]?'O campo do permisões foi atualizado!':'O campo não atualizado!'
                 }
@@ -187,7 +188,11 @@ let dataBase = []
             }
         }else{
             return{
-                Mensage:'Voce nao pode realizar atualização verifique seus dados'
+                Mensage:'Voce nao pode realizar atualização verifique seus dados',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                emailValido: (!this.validarEmailUnico(email)),
+                permisao:this.permisoes[1],
             }
         }
 
@@ -202,9 +207,9 @@ let dataBase = []
             let resutado;
             for (let i = 0; i < dataBase.length; i++) {
                 if (dataBase[i].email === email) {
-                    dataBase[i].status = true;
+                    dataBase[i].statusUsuario = true;
                     resutado = {
-                        Mensage: `O usuario ${users.nome} foi ativado com sucesso!`,
+                        Mensage: `O usuario ${dataBase[i].nome} foi ativado com sucesso!`,
                         usuarioHabilitado: dataBase[i].statusUsuario
                     };
                     break;
@@ -217,8 +222,8 @@ let dataBase = []
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
                 emailValido: (!this.validarEmailUnico(email)),
-                permisão:this.configStatus
-
+                permisao:this.permisoes[2],
+                emailDeOutroUser:email!=this.email
 
             }
         }
@@ -282,6 +287,7 @@ let dataBase = []
         }
     };
 
+
     //listar usuarios existentes
     listarUsuarios(email) {
         let testeLogico = Boolean(email) && this.logado && this.statusUsuario;
@@ -293,7 +299,13 @@ let dataBase = []
                     }
                 }
             );
-            return (buscarPorEmail);
+            if(buscarPorEmail){
+                return (buscarPorEmail);
+            }else{
+                return{
+                    Mensage:'Voce inseriu um email errado por favor tente com outro.'
+                }
+            }
         } else if (this.logado && this.statusUsuario) {
             return dataBase;
         } else {
@@ -341,9 +353,12 @@ let dataBase = []
     };
 }
 
-// const guilherme = new usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
+// const guilherme = new Usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
 // const loginrealizado = guilherme.realizarLogin('GuilhermeKrause@gmail.com','Altenirgomes1.');
 // const aldison = guilherme.cadastrarNovoUsuario("Adilson portilho barbosa","adison@gmail.com","aldisonSenha23?",[true,true,true,true]);
+
+// const emailErrado  =  guilherme.listarUsuarios('adison@gmail.com');
+// console.log(emailErrado)
 
 // const adisonAtulizado = guilherme.altualizarUsuario("adison@gmail.com",null,null,null,null)
 // console.log(adisonAtulizado);dataBase
