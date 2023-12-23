@@ -2,7 +2,7 @@ const nodemon = require('nodemon');
 const {Usuario, dataBase} = require('./desafio.js'); 
 
 //fazer a rota de cadastra com email errado e senha
-describe("Testes metodos publicos da classe usuario.",()=>{
+describe("Metodos publicos da classe usuario.",()=>{
     
     novoUsuario = new Usuario('Guilherme krause','GuilhermeKrause@gmail.com','Altenirgomes1.',[true,true,true,true]);
     segundoNovoUsuario = new Usuario('Adilson junior portilho Barbosa','adisonPortilhoBarbosa@gmail.com','OaltenirEmuitoGostoso4#');
@@ -122,7 +122,7 @@ describe("Testes metodos publicos da classe usuario.",()=>{
 
 });
 
-describe("Validação de Funções de Email e Senha.",()=>{
+describe("Validação de Funções de Email e Senha da classe usuario.",()=>{
 
     describe("Testes para vaidar senha do usuario atende os criterios",()=>{
         it("Teste para verificar se o usario inseriu uma senha valida senha valida esperado true",()=>{
@@ -232,7 +232,7 @@ describe("Validação de Funções de Email e Senha.",()=>{
 
 });
 
-describe("Validação de ativação e desativação de usarios.",()=>{
+describe("Validação de ativação e desativação de usario.",()=>{
 
     describe("Testes de ativação de usuarios.",()=>{
         it("Teste verifica se a ativação correu corretamente esperado mensage de sucesso.",()=>{
@@ -243,7 +243,7 @@ describe("Validação de ativação e desativação de usarios.",()=>{
             const usuarioAtivado = novoUsuario.ativarUsuarios("carlos@yahoo.com");
             const resutado = {
                 Mensage: `O usuario ${novoUsuarioDesativo.nome} foi ativado com sucesso!`,
-                usuarioHabilitado: novoUsuarioDesativo.statusUsuario
+                usuarioHabilitado: true
             };
             expect(usuarioAtivado).toEqual(resutado);
             expect(novoUsuarioDesativo.statusUsuario).toEqual(true);
@@ -258,7 +258,7 @@ describe("Validação de ativação e desativação de usarios.",()=>{
                 loginAutenticado: true,
                 statusUsuario: true,
                 emailValido: true,
-                permisão:true,
+                permissao:true,
                 emailDeOutroUser:false
             };
             expect(reealizarAutoAtivacao).toEqual(resultado);
@@ -274,7 +274,7 @@ describe("Validação de ativação e desativação de usarios.",()=>{
                 loginAutenticado: false,
                 statusUsuario: true,
                 emailValido: true,
-                permisão:true,
+                permissao:true,
                 emailDeOutroUser:true
             };
             expect(realizarAtivacao).toEqual(resultado);
@@ -291,17 +291,16 @@ describe("Validação de ativação e desativação de usarios.",()=>{
                 loginAutenticado: true,
                 statusUsuario: false,
                 emailValido: true,
-                permisão:true,
+                permissao:true,
                 emailDeOutroUser:true
             };
             expect(realizarAtivacao).toEqual(resultado);
             expect(usuarioParaDesativa.statusUsuario).toEqual(false);
         });
-        it("Teste ativação sem premisão",()=>{
+        it("Teste se o usuario não tema permissão para realizar ativação esperado mensage de erro",()=>{
             novoUsuario.logado = true;
             novoUsuario.statusUsuario = true;
             novoUsuario.permisoes[2] = false
-            console.log(novoUsuario.permisoes[2])
             const usuarioParaDesativa = new Usuario("Ricardo","ricardo@hotmail.com","ALALALALksmw4::",[true, false, false, true]);
             usuarioParaDesativa.statusUsuario = false;
             const realizarAtivacao = novoUsuario.ativarUsuarios("ricardo@hotmail.com")
@@ -310,34 +309,185 @@ describe("Validação de ativação e desativação de usarios.",()=>{
                 loginAutenticado: true,
                 statusUsuario: true,
                 emailValido: true,
-                permisão:false,
+                permissao:false,
                 emailDeOutroUser:true
             };
             expect(realizarAtivacao).toEqual(resultado);
             expect(usuarioParaDesativa.statusUsuario).toEqual(false);
         })
-        // it("Teste ativação email errado")
-
-
-
+        it("Teste que verifica se um email informado para ativação email esta errado esperado mensage de erro.",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[2] = true;
+            const usuarioParaDesativa = new Usuario("Patricia","patricia@gmail.com","senhaBao1.2::",[false, true, false, false]);
+            usuarioParaDesativa.statusUsuario = false;
+            const realizarAtivacao = novoUsuario.ativarUsuarios("emailErrado@.com")
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar ativar um usuario verifique os dados!',
+                loginAutenticado: true,
+                statusUsuario: true,
+                emailValido: false,
+                permissao:true,
+                emailDeOutroUser:true
+            };
+            expect(realizarAtivacao).toEqual(resultado);
+            expect(usuarioParaDesativa.statusUsuario).toEqual(false);
+        });
     });
-    // describe("Testes de desativação de usuarios.",()=>{
-    //     it("Teste ativação correta")
-    //     it("Teste auto ativação")
-    //     it("Teste sem login ")
-    //     it("Teste ativação sem esta ativado")
-    //     it("Teste ativação sem premisão")
-    //     it("Teste ativação email errado")
+    describe("Testes que verificão a funcão de desativação de usuarios.",()=>{
+        it("Teste verifica se a desativação correu corretamente esperado mensage de sucesso.",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            const novoUsuarioAtivado = new Usuario("Gustavo","gustavo@yahoo.com","GUUUUU..103s",[true, true, true, false]);
+            const usuarioDesativado = novoUsuario.desativarUsuarios("gustavo@yahoo.com");
+            const resutado = {
+                Mensage: `O usuario ${novoUsuarioAtivado.nome} foi desativado com sucesso!`,
+                usuarioHabilitado: false
+            };
+            expect(usuarioDesativado).toEqual(resutado);
+            expect(novoUsuarioAtivado.statusUsuario).toEqual(false);
 
-    // })
+        });
+        it("Teste se o usuario pode realiza auto desativação esperado mensage de erro",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            const reealizarAutoDesativacao = novoUsuario.desativarUsuarios('GuilhermeKrause@gmail.com')
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: true,
+                statusUsuario: true,
+                emailValido: true,
+                permissao:true,
+                emailDeOutroUser:false
+            };
+            expect(reealizarAutoDesativacao).toEqual(resultado);
+            expect(novoUsuario.statusUsuario).toEqual(true);
+        });
+        it("Teste que verifica se o usuario realizou login para usar a função destivar usarios esperado mensagem de erro",()=>{
+            novoUsuario.logado = false;
+            novoUsuario.statusUsuario = true;
+            const usuarioParaDesativa = new Usuario("Camila","camila@gmail.com","katatiMVA3.",[true, false, true, false]);
+            const realizarDesaativacao = novoUsuario.desativarUsuarios("camila@gmail.com")
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: false,
+                statusUsuario: true,
+                emailValido: true,
+                permissao:true,
+                emailDeOutroUser:true
+            };
+            expect(realizarDesaativacao).toEqual(resultado);
+            expect(usuarioParaDesativa.statusUsuario).toEqual(true);
+        });
+        it("Teste que verifica se um usuario esta ativo para realizara a desativação eperado mensage de erro",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = false;
+            const usuarioParaDesativa = new Usuario("Eduardo","eduardo@yahoo.com","SenhaLImap2r._",[false, true, false, true]);
+            const realizarDesaativacao = novoUsuario.desativarUsuarios("eduardo@yahoo.com")
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: true,
+                statusUsuario: false,
+                emailValido: true,
+                permissao:true,
+                emailDeOutroUser:true
+            };
+            expect(realizarDesaativacao).toEqual(resultado);
+            expect(usuarioParaDesativa.statusUsuario).toEqual(true);
+        });
+        it("Teste se o usuario não tema permissão para realizar desativação esperado mensage de erro",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[2] = false
+            const usuarioParaDesativa = new Usuario("Amanda","amanda@hotmail.com","amanDInha12.::",[true, false, false, false]);
+            const realizarAtivacao = novoUsuario.desativarUsuarios("amanda@hotmail.com")
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: true,
+                statusUsuario: true,
+                emailValido: true,
+                permissao:false,
+                emailDeOutroUser:true
+            };
+            expect(realizarAtivacao).toEqual(resultado);
+            expect(usuarioParaDesativa.statusUsuario).toEqual(true);
+        })
+        it("Teste que verifica se um email informado para desativação email esta errado esperado mensage de erro.",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[2] = true;
+            const usuarioParaDesativa = new Usuario("Isabel","isabel@yahoo.com","nomeEsta12::",[false, false, true, true]);
+            const realizarAtivacao = novoUsuario.desativarUsuarios("emailErrado@.com")
+            const resultado = {
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: true,
+                statusUsuario: true,
+                emailValido: false,
+                permissao:true,
+                emailDeOutroUser:true
+            };
+            expect(realizarAtivacao).toEqual(resultado);
+            expect(usuarioParaDesativa.statusUsuario).toEqual(true);
+        });
+
+    })
+});
+
+describe("Cadastrar classe usuario.",()=>{
+    describe("Testes que verificão a função de cadastrar novos usarios.",()=>{
+        it("Teste que verifica se o cadastrastro foi realizado com sucesso",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[0] = true
+            const novoCadastroDeUsuario = novoUsuario.cadastrarNovoUsuario("Luiz","luiz@gmail.com","Senha123Açr232!",[true, false, true, false]);
+            expect(novoCadastroDeUsuario).toBeInstanceOf(Usuario);
+            expect(dataBase).toContain(novoCadastroDeUsuario);
+        })
+        it("Teste que verifica se o usuario realizou login para cadastrar novos usarios esperado mensage de erro",()=>{
+            novoUsuario.logado = false;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[0] = true
+            const novoCadastroDeUsuario = novoUsuario.cadastrarNovoUsuario("Carolina","carolina@yahoo.com","senhaquePass2..",[false, true, false, true])
+            const resultado = {
+                Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
+                loginAutenticado: false,
+                statusUsuario: true,
+                permissao:true
+            };
+            expect(novoCadastroDeUsuario).toEqual(resultado);
+         
+
+        })
+        it("Teste que verifica se um usario tem status ativo para cadastrar novo usuarios eperado mensage de erro",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = false;
+            novoUsuario.permisoes[0] = true
+            const novoCadastroDeUsuario = novoUsuario.cadastrarNovoUsuario("Roberto","roberto@hotmail.com","senhaqddd4..",[false, true, false, true])
+            const resultado = {
+                Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
+                loginAutenticado: true,
+                statusUsuario: false,
+                permissao:true
+            };
+            expect(novoCadastroDeUsuario).toEqual(resultado);
+        })
+        it("Teste que verifica se o usario tem permisão para realizar o cadastro de novos usuario esperado mensage de erro",()=>{
+            novoUsuario.logado = true;
+            novoUsuario.statusUsuario = true;
+            novoUsuario.permisoes[0] = false
+            const novoCadastroDeUsuario = novoUsuario.cadastrarNovoUsuario("Larissa","larissa@gmail.com","funciona3093^..",[true, true, true, false])
+            const resultado = {
+                Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
+                loginAutenticado: true,
+                statusUsuario: true,
+                permissao:false
+            };
+            expect(novoCadastroDeUsuario).toEqual(resultado);
+        })
+    })
+
+
+
+
+
 })
-
-'Julia','julia@hotmail.com','Senha987',[true, false, true, true]
-
-//Cadastrar novo usuario sem realizar o login
-//Cadastrar novo usuario com email existem
-//Cadastrar novo usuario com senha invalida
-//Cadastrar novo usuario com senha email invalido 
-//Cadastrar novo usuario com senha senha e email invalidos
-//Cadastrar novo usario com status inativo
-//Cadastrar novo usario sem premisão

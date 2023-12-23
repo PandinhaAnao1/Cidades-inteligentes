@@ -14,7 +14,7 @@ class Usuario {
     ) {
         //explicar o porque desse _id com ternario
         //Explicar o porque valida senha
-        if(this.validaEmail(email) && this.verificaSenha(senha) && Array.isArray(permisoes)){
+        if((this.validaEmail(email)) && this.verificaSenha(senha) && Array.isArray(permisoes)){
             const salt = bycrypt.genSaltSync(10)
             const hash = bycrypt.hashSync(senha,salt);
             this._id = (dataBase.length == 0 ? 0 : dataBase.length)
@@ -26,10 +26,6 @@ class Usuario {
             this.dateCria = new Date();
             this.dateLogin = null;
             this.logado = false;
-            this.cadastraUse = permisoes[0]?true:'Permisão para cadastrar negada!'
-            this.atualizarUse = permisoes[1]?true:'Permisão para atualizar negada!'
-            this.configStatus = permisoes[2]?true:'Permisão para alterar status negada!'
-            this.excluirUse = permisoes[3]?true:'Permisão para excluir usuario negada!'
             
             dataBase.push(this);
             return this;
@@ -76,7 +72,6 @@ class Usuario {
     };
     //Jução do validaEmailRegex e validarEmailUnico
     validaEmail(email) {
-        this.validaEmailRegex(email)
         if((this.validaEmailRegex(email))&&(this.validarEmailUnico(email))){
             return true;
         }else{
@@ -98,7 +93,8 @@ class Usuario {
     validarEmailUnico(email){
         var emailUnico = true
         for (let i = 0; i < dataBase.length; i++) {
-            if (email == dataBase[i].email) {
+            let usuario = dataBase[i]
+            if (email == usuario.email) {
                 emailUnico = false;
                 break;
             };
@@ -126,7 +122,7 @@ class Usuario {
                 Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
-                permisao:this.permisoes[0]
+                permissao:this.permisoes[0]
             };
         };
     };
@@ -192,7 +188,7 @@ class Usuario {
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
                 emailValido: (!this.validarEmailUnico(email)),
-                permisao:this.permisoes[1],
+                permissao:this.permisoes[1],
             }
         }
 
@@ -222,7 +218,7 @@ class Usuario {
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
                 emailValido: (!this.validarEmailUnico(email)),
-                permisao:this.permisoes[2],
+                permissao:this.permisoes[2],
                 emailDeOutroUser:email!=this.email
 
             }
@@ -238,9 +234,9 @@ class Usuario {
             let resutado;
             for (let i = 0; i < dataBase.length; i++) {
                 if (dataBase[i].email === email) {
-                    dataBase[i].status = false;
+                    dataBase[i].statusUsuario = false;
                     resutado = {
-                        Mensage: `O usuario ${users.nome} foi desativado com sucesso!`,
+                        Mensage: `O usuario ${dataBase[i].nome} foi desativado com sucesso!`,
                         usuarioHabilitado: dataBase[i].statusUsuario
                     };
                     break;
@@ -253,7 +249,9 @@ class Usuario {
                 loginAutenticado: this.logado,
                 statusUsuario: this.statusUsuario,
                 emailValido: !(this.validarEmailUnico(email)),
-                permisão:this.configStatus
+                permissao:this.permisoes[2],
+                emailDeOutroUser:this.email!=email
+
             };
         };
     };
@@ -282,7 +280,7 @@ class Usuario {
                 statusUsuario: this.statusUsuario,
                 emailValido: !(this.validarEmailUnico(email)),
                 exclusaoBemSucedida: false,
-                premisão:this.excluirUse
+                permissao:this.permisoes[3]
             };
         }
     };
