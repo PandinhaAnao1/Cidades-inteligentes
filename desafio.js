@@ -8,13 +8,13 @@ let dataBase = []
 
 //separa a classe dos metodosstatusUsuari
 
- class usuario {
+ class Usuario {
     constructor(
         nome, email, senha, permisoes = [null,null,null,null],
     ) {
         //explicar o porque desse _id com ternario
         //Explicar o porque valida senha
-        if(this.validaEmail(email) && this.verificaSenha(senha)){
+        if(this.validaEmail(email) && this.verificaSenha(senha) && Array.isArray(permisoes)){
             const salt = bycrypt.genSaltSync(10)
             const hash = bycrypt.hashSync(senha,salt);
             this._id = (dataBase.length == 0 ? 0 : dataBase.length)
@@ -320,7 +320,7 @@ let dataBase = []
                 Mensage:'Falha ao realizar login!',
                 statusDelogin: this.logado,
                 statusUsuario: this.statusUsuario,
-                senhaValida: this.senha == senha,
+                senhaValida: senhaCorreta,
                 emailValido: this.email == email
             }
         }
@@ -346,6 +346,6 @@ let dataBase = []
 // const aldison = guilherme.cadastrarNovoUsuario("Adilson portilho barbosa","adison@gmail.com","aldisonSenha23?",[true,true,true,true]);
 
 // const adisonAtulizado = guilherme.altualizarUsuario("adison@gmail.com",null,null,null,null)
-// console.log(adisonAtulizado);
+// console.log(adisonAtulizado);dataBase
 // console.log(aldison)
-module.exports = {usuario, dataBase};
+module.exports = {Usuario, dataBase};
