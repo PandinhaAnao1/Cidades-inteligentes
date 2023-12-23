@@ -1,192 +1,353 @@
-//Criar um novo usuário com os atributos mencionados.
-//Alterar os dados de um usuário existente.
-//     ○ Ativar/desativar usuários.
-//     ○ Excluir um usuário.
-//     ○ Listar todos os usuários cadastrados.
-//     ○ Login e logout.
+const { moduleExpression } = require('@babel/types');
+const bycrypt = require('bcrypt');
+const { isArray } = require('util');
+const { array } = require('yargs');
+
 
 let dataBase = []
 
-//separa a classe dos metodos
+//separa a classe dos metodosstatusUsuari
 
-class usuario{
+class Usuario {
     constructor(
-        nome, email, senha, permi, 
+        nome, email, senha, permisoes = [null,null,null,null],
     ) {
-        this._id = dataBase.length+1
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.permi = permi;
-        this.statu = true;
-        this.dateCria = null;
-        this.dateLogin = null;
-        this.logado = false;
+        //explicar o porque desse _id com ternario
+        //Explicar o porque valida senha
+        if((this.validaEmail(email)) && this.verificaSenha(senha) && Array.isArray(permisoes)){
+            const salt = bycrypt.genSaltSync(10)
+            const hash = bycrypt.hashSync(senha,salt);
+            this._id = (dataBase.length == 0 ? 0 : dataBase.length)
+            this.nome = nome;
+            this.email = email;
+            this.senha = hash;
+            this.permisoes = permisoes;
+            this.statusUsuario = true;
+            this.dateCria = new Date();
+            this.dateLogin = null;
+            this.logado = false;
+            
+            dataBase.push(this);
+            return this;
+        }else{
+            return{
+                Mensage:'Seu emai ou sua senha não atendem os criterios!',
+                emailValido: this.validaEmail(email),
+                senhaValida: this.verificaSenha(senha)
+            };
+        };
     };
-
-
-    //não permitir cadastrar dois usuario com emials iguais
-    cadastrarNovoUsuario(novoUsuario, cadLogado = this.logado, cadStatus = this.status) {
-        let testeLogico = (cadLogado && cadStatus) && novoUser.length == 3;
-        if (testeLogico) {
-            let user = 
-                new usuario(
-                    novoUsuario[0],
-                    novoUsuario[1],
-                    novoUsuario[2],
-                        );
-                    dataBase.push(user);
-                    return user;
-        } else {
-            return {
-                Mensage:'Não foi possivel cadastrar verifique os dados para o cadastro!',
-                user:novoUsuario
+    
+    //Verificar se senha é valida
+    verificaSenha(senha) {
+        if (senha.length >= 8) {
+            const verificaDados = (charCodeletra, x, itv) => {
+                charCodeletra = charCodeletra - x;
+                if ((charCodeletra <= itv) && (charCodeletra >= 0)) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+            for (let c = 0; c < senha.length; c++) {
+                let charDaLetra = senha.charCodeAt(c);
+                if (verificaDados(charDaLetra, 97, 25)) {
+                    //Intervalo de caractere minusculos a = 97, z = 122
+                    var temMinuscula = true;
+                } else if (verificaDados(charDaLetra, 65, 25)) {
+                    //Intervalo de caractere maiusculo A = 65, Z = 90
+                    var temMaiuscula = true;
+                } else if (verificaDados(charDaLetra, 48, 9)) {
+                    //Intervalo dos numeros 0 = 48, 9 = 57
+                    var temNumeros = true;
+                } else {
+                    var temEspeciais = true;
+                }
+            };
+            let testLogico = Boolean(temEspeciais && temNumeros && temMaiuscula && temMinuscula);
+            return testLogico;
+        } else {
+            return false;
         }
     };
+    //Jução do validaEmailRegex e validarEmailUnico
+    validaEmail(email) {
+        if((this.validaEmailRegex(email))&&(this.validarEmailUnico(email))){
+            return true;
+        }else{
+            return false;
+        };
+    };
+    
+    //Verifica se o email obedece criterios de um regex
+    validaEmailRegex(email){
+        
+        let emailValido = true;
+        const regex = /^[\w+.]+@\w+\.\w{2,}(?:\.\w{2})?$/;
+        emailValido = regex.test(email);
+        return emailValido;
 
-    //Por campo
-    altualizarUsuario(emailAtua,updNome,updemail,updSenha,updPermi,cadLogado = this.logado, cadStatus = this.status) {
-        let usuarioSemAtualizar  = dataBase.find((user)=>{
-            if(user.email == emailAtua ){
-                return user;
-            }else{
-                return false;
+    };
+
+    //Verifica se email esta cadastrado na database
+    validarEmailUnico(email){
+        var emailUnico = true
+        for (let i = 0; i < dataBase.length; i++) {
+            let usuario = dataBase[i]
+            if (email == usuario.email) {
+                emailUnico = false;
+                break;
             };
-        });
-     
-        let testeLogico = cadLogado&&cadStatus&&usuarioSemAtualizar;
-        if(testeLogico){
+        }
+        return emailUnico;
+    };
+
+    
+    //Realiza cadastro de novos usuario unicos
+    cadastrarNovoUsuario(usarioNovoNome,usuarioNovoemail,usarioNovosenha,usuarioNovoPemisoes) {
+        let testeStatusLogin = 
+            (this.logado && this.statusUsuario && this.permisoes[0]);
+        let nomeValido = Boolean(usarioNovoNome);
+        if (testeStatusLogin&&nomeValido) {
+            let tentativaCadastro =
+                new Usuario(
+                    usarioNovoNome,
+                    usuarioNovoemail,
+                    usarioNovosenha,
+                    usuarioNovoPemisoes
+                );
+                return tentativaCadastro;
+        } else {
+            return {
+                Mensage: 'Não foi possivel cadastrar verifique os dados e login para realizar o cadastro!',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                permissao:this.permisoes[0]
+            };
+        };
+    };
+
+    //Atulizar usario por campo
+    altualizarUsuario(emailAtua, updNome, updemail, updSenha, updPermi) {
+        //Corrijir a logica dos ifs
+        let usuarioSemAtualizar;
+        let testeStatusLogin = 
+            (this.logado && this.statusUsuario && this.permisoes[1]);
+        if (testeStatusLogin) {
+            for(let i = 0;i<dataBase.length;i++){
+                let usuario = dataBase[i];
+                if(usuario.email==emailAtua){
+                    usuarioSemAtualizar = usuario;
+                };
+            };
+            let arryAtualizados = [null,null,null,null]
             if(updNome){
                 usuarioSemAtualizar.nome = updNome;
-            }
+                arryAtualizados[0] = true;
+                }
             if(updemail){
-                usuarioSemAtualizar.email = updemail;
-            }
+                let emailValido = this.validaEmail(updemail);
+                if(emailValido){
+                    usuarioSemAtualizar.email = updemail;
+                    arryAtualizados[1] = true;
+                }; 
+                }
             if(updSenha){
-                usuarioSemAtualizar.senha = updSenha;
+                let senhaValida = this.verificaSenha(updSenha);
+
+                if(senhaValida){//passarcripto
+                    const salt = bycrypt.genSaltSync(10)
+                    const hash = bycrypt.hashSync(updSenha,salt)
+                    usuarioSemAtualizar.senha = hash;
+                    arryAtualizados[2] = true;
+                }
             }
-            if(updPermi){
-                usuarioSemAtualizar.permi = updPermi;
-            }
-            return{
-                Mensage:'Campos atualizado com sucesso!'
+            if(Array.isArray(updPermi)){
+                usuarioSemAtualizar.permisoes = updPermi;
+                arryAtualizados[3] = true;
+                
+               }
+
+            if(arryAtualizados[0]||arryAtualizados[1]||arryAtualizados[2]||arryAtualizados[3]){
+                return {
+                    Mensage: 'Campos atualizado com sucesso!',
+                    Nome:arryAtualizados[0]?'O campo do nome foi atualizado!':'O campo não atualizado!',
+                    Email:arryAtualizados[1]?'O campo do email foi atualizado!':'O campo não atualizado!',
+                    Senha:arryAtualizados[2]?'O campo da senha foi atualizado!':'O campo não atualizado!',
+                    Permisoes:arryAtualizados[3]?'O campo do permisões foi atualizado!':'O campo não atualizado!'
+                }
+            }else{
+                return{
+                    Mensage:'Verifique os campos para realizar a atualização',
+                    ComoUsar:'Os campos que nao serão atualizado devem serem null'
+                }
             }
         }else{
             return{
-                Mensage:"Não foi possivel realizar a atualizar o usario relize login ou verifique o status."
+                Mensage:'Voce nao pode realizar atualização verifique seus dados',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                emailValido: (!this.validarEmailUnico(email)),
+                permissao:this.permisoes[1],
             }
         }
 
     };
 
-    ativarUsuarios(email,cadLogado = this.logado, cadStatus = this.status){
-         //colocar explicação o porque do foreche
-         const testeLogico = cadLogado&&cadStatus
-         if(testeLogico){
-             let resutado;
-             dataBase.forEach((users) =>{
-                 if (users.email === email) {
-                     users.status = true;
-                 resutado =  {
-                     Mensage:`O usuario ${users.nome} foi ativado com sucesso!`
-                   };
-                 }else{
-                     resutado = {
-                         Mensage:`Não foi possivel ativar o usuario do email: ${email}`
-                     };
-                 };
-             });
-             return resutado;
-         }else{
-             return{
-                 Mensage:'Ocorreu um erro ao tentar ativar um usuario verifique o login e se esta ativo!'
-             }
-         }
-    };
-
-    desativarUsuarios(email,cadLogado = this.logado,cadStatus = this.status ) {
+    //ativar usuario existentes
+    ativarUsuarios(email) {
         //colocar explicação o porque do foreche
-        const testeLogico = cadLogado&&cadStatus
-        if(testeLogico){
+        const testeStatusLogin = 
+            (this.logado && this.statusUsuario && (!this.validarEmailUnico(email)) && (email!=this.email) && this.permisoes[2]);
+        if (testeStatusLogin) {
             let resutado;
-            dataBase.forEach((users) =>{
-                if (users.email === email) {
-                    users.status = false;
-                resutado =  {
-                    Mensage:`O usuario ${users.nome} foi desativado com sucesso!`
-                  };
-                }else{
+            for (let i = 0; i < dataBase.length; i++) {
+                if (dataBase[i].email === email) {
+                    dataBase[i].statusUsuario = true;
                     resutado = {
-                        Mensage:`Não foi possivel desativar o usuario do email: ${email}`
+                        Mensage: `O usuario ${dataBase[i].nome} foi ativado com sucesso!`,
+                        usuarioHabilitado: dataBase[i].statusUsuario
                     };
-                };
-            });
+                    break;
+                }
+            };
             return resutado;
-    
-        }else{
-            return{
-                Mensage:'Ocorreu um erro ao tentar desativar um usuario'
+        } else {
+            return {
+                Mensage: 'Ocorreu um erro ao tentar ativar um usuario verifique os dados!',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                emailValido: (!this.validarEmailUnico(email)),
+                permissao:this.permisoes[2],
+                emailDeOutroUser:email!=this.email
+
             }
         }
     };
 
-    excluirUsuarios(email,cadLogado = this.logado,cadStatus = this.status) {
-        let testeLogico = email&& cadLogado && cadStatus
-        if(testeLogico){
-            let usuarioAdeletar  = dataBase.find(
-                (user)=>{
-                if(user.email == email){
-                    dataBase.slice()
+    //Desativar o usuario existentes
+    desativarUsuarios(email) {
+        //colocar explicação o porque do foreche
+        const testeStatusLogin = 
+            (this.logado && this.statusUsuario && (!this.validarEmailUnico(email)) && (email!=this.email) && this.permisoes[2]);
+        if (testeStatusLogin) {
+            let resutado;
+            for (let i = 0; i < dataBase.length; i++) {
+                if (dataBase[i].email === email) {
+                    dataBase[i].statusUsuario = false;
+                    resutado = {
+                        Mensage: `O usuario ${dataBase[i].nome} foi desativado com sucesso!`,
+                        usuarioHabilitado: dataBase[i].statusUsuario
+                    };
+                    break;
                 };
-            });
-            console.log(usuarioAdeletar)
-        }else{
+            };
+            return resutado;
+        } else {
             return {
-                Mensage:'Não foi possivel realizar a exclusão do usuario!'
+                Mensage: 'Ocorreu um erro ao tentar desativar um usuario',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                emailValido: !(this.validarEmailUnico(email)),
+                permissao:this.permisoes[2],
+                emailDeOutroUser:this.email!=email
+
+            };
+        };
+    };
+
+    //Excluir usuario existentes
+    excluirUsuarios(email) {
+        let testeLogico = 
+            this.logado && this.statusUsuario && !(this.validarEmailUnico(email)) && (email!=this.email) && this.permisoes[3];
+        if (testeLogico) {
+            let resutado;
+            for (let i = 0; i < dataBase.length; i++) {
+                if (dataBase[i].email == email) {
+                    dataBase.splice(dataBase[i]._id, 1);
+                    resutado ={
+                        Mensage:'Usuario deletado com sucesso!',
+                        exclusaoBemSucedida:true
+                    };
+                    break;
+                };
+            };
+            return resutado;
+        } else {
+            return {
+                Mensage: 'Não foi possivel realizar a exclusão do usuario verifique os dados!',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario,
+                emailValido: !(this.validarEmailUnico(email)),
+                exclusaoBemSucedida: false,
+                permissao:this.permisoes[3]
             };
         }
     };
 
-    //usar o if para poder verificar se volto todos ou apenas um
-    listarUsuarios(email) {
-        return dataBase
-    };
 
-    realizarLogin(email, senha) {
-        //validar email com regex []+@
-        if (email == this.email && senha == this.senha) {
-            this.logado = true;
-            this.DateLogin = new Date()
+    //listar usuarios existentes
+    listarUsuarios(email) {
+        let testeLogico = Boolean(email) && this.logado && this.statusUsuario;
+        if (testeLogico) {
+            let buscarPorEmail = dataBase.find(
+                (users) => {
+                    if (users.email == email) {
+                        return users;
+                    }
+                }
+            );
+            if(buscarPorEmail){
+                return (buscarPorEmail);
+            }else{
+                return{
+                    Mensage:'Voce inseriu um email errado por favor tente com outro.'
+                }
+            }
+        } else if (this.logado && this.statusUsuario) {
+            return dataBase;
         } else {
-            console.log('Desculpe voce inseriu os dado de login errados!')
-            this.logado = false
+            return { 
+                Mensage: 'Desculpe não foi possivel buscar usuarios verifique seu status e login.',
+                loginAutenticado: this.logado,
+                statusUsuario: this.statusUsuario
+            }
+        }
+    }
+
+    //Realiza login da propria classe
+    realizarLogin(email, senha){ 
+        const senhaCorreta =  bycrypt.compareSync(senha,this.senha); 
+        let testeLogico = senhaCorreta && (email == this.email) && this.statusUsuario
+        if (testeLogico && this.logado == false) {
+            this.logado = true;
+            this.dateLogin = new Date();
+            return{
+                Mensage:'Login realizado com sucesso!'
+            }
+        } else {
+            return{
+                Mensage:'Falha ao realizar login!',
+                statusDelogin: this.logado,
+                statusUsuario: this.statusUsuario,
+                senhaValida: senhaCorreta,
+                emailValido: this.email == email
+            }
         }
     };
 
+    //Realiza logout da propria classe
     realizarLogout() {
-        this.logado = false;
+        if(this.logado == true){
+            this.logado = false;
+            return{
+                Mensage:'Logout realizado com sucesso!'
+            }
+        }else{
+            return{
+                Mensage:'Voce nao esta logado realize o login primeiro!'
+            }
+        }
     };
-
 }
-
-const altenir = new usuario;
-
-altenir.email = 'altenirgomesmodesto@gmail.com';
-
-altenir.senha = '123';
-
-altenir.realizarLogin('altenirgomesmodesto@gmail.com', '123')
-
-altenir.status = true;
-
-let novoUser = ["Guilherme","krause@gmail.com","senha123"]
-let novoUser2 = ["adison","adison@gmail.com","senhw123"]
-
-
-const guilherme = altenir.cadastrarNovoUsuario(novoUser)
-const adison = altenir.cadastrarNovoUsuario(novoUser2)
-const lista  = altenir.ativarUsuarios("krause@gmail.com")
-
-const paia  = altenir.excluirUsuarios("krause@gmail.com")
-console.log()
+module.exports = {Usuario, dataBase};
